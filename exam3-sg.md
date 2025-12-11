@@ -33,7 +33,6 @@ app.get('/', (req, res) => {
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
-  console.log('Press Ctrl+C to stop the server');
 });
 ```
 
@@ -99,15 +98,14 @@ fetch('/api/planets?name=Mars')
   })
   .then(data => {
     if (!data || data.length === 0) {
-      // Handle empty results gracefully
-      console.warn('No matching planets found');
-      // Example: update UI if present
+      // Handle empty results gracefully (update UI if present)
       const msg = document.getElementById('message');
       if (msg) msg.textContent = 'No planets matched your query.';
       return;
     }
-    console.log('Planet:', data[0].name);
-    console.log('Distance:', data[0].distance);
+    // Example: display first planet in UI if available
+    const msg = document.getElementById('message');
+    if (msg) msg.textContent = `${data[0].name} — ${data[0].distance} million km`;
   })
   .catch(error => {
     // Network errors and any thrown errors from above end up here
@@ -119,22 +117,16 @@ fetch('/api/planets?name=Mars')
 
 // Same example using async/await (recommended for readability)
 async function loadPlanet(name) {
-  try {
-    const res = await fetch(`/api/planets?name=${encodeURIComponent(name)}`);
-    if (!res.ok) {
-      if (res.status === 404) throw new Error('Resource not found (404)');
-      throw new Error(`HTTP error! Status: ${res.status}`);
-    }
-    const data = await res.json();
-    if (!data || data.length === 0) {
-      console.warn('No matching planets found');
-      return null;
-    }
-    return data[0];
-  } catch (err) {
-    console.error('Fetch failed (async):', err);
-    throw err; // rethrow or handle here
+  const res = await fetch(`/api/planets?name=${encodeURIComponent(name)}`);
+  if (!res.ok) {
+    if (res.status === 404) throw new Error('Resource not found (404)');
+    throw new Error(`HTTP error! Status: ${res.status}`);
   }
+  const data = await res.json();
+  if (!data || data.length === 0) {
+    return null;
+  }
+  return data[0];
 }
 
 // Usage: loadPlanet('Mars').then(p => console.log(p)).catch(e => {/* handled above */});
