@@ -1,24 +1,22 @@
-# 🚀 CS 246 Final Exam Study Guide (Simplified)
+# CS 246 Final Exam Study Guide
 
-This file explains key topics in very simple language. Each section says what the tool is, when to use it, and gives a tiny example.
+## 1. Express.js and Backend API Development
 
-## 1. Writing a Small Server with Express
+Express is a minimal web framework built on top of Node.js. It is designed to handle HTTP requests and send HTTP responses through route handlers.
 
-Express makes a simple web server in Node.js. The server gets requests (`req`) and sends responses (`res`).
+**Key Mechanisms:**
+- Request data from the URL is accessed via `req.query` (e.g., `/api/planets?name=Mars`).
+- Static files are served using `app.use(express.static('public'))`.
+- Use `res.json(data)` to send JSON-encoded responses with proper Content-Type headers.
+- `console.log()` output appears only in the server terminal, never in the client browser.
 
-Quick facts:
-- `req.query` holds query data from the URL (`/planets?name=Mars`).
-- `app.use(express.static('public'))` serves files like HTML and images from the `public` folder.
-- Use `res.json(data)` to send JSON back to the client.
-- `console.log()` shows messages only in the server terminal, not in the browser.
+**Use Cases:**
+- Building REST APIs.
+- Prototyping and learning.
+- Lightweight microservices.
 
-When to use Express:
-- Small APIs and simple web apps.
-- Prototypes or learning projects.
-- Small microservices that do one job.
-
-When not to use:
-- For very high-speed services or very large, tangled apps.
+**When Not to Use:**
+- High-performance or specialized applications.
 
 Example server (listens on port 3000):
 
@@ -59,11 +57,11 @@ app.get('/api/planets', (req, res) => {
 });
 ```
 
-## 2. Getting Data in the Browser with `fetch()`
+## 2. Client-Side HTTP Requests with `fetch()`
 
-`fetch()` asks a server for data. It returns a `Response` object. To read the body, call `response.json()`.
+`fetch()` is the modern standard for making HTTP requests from the browser. It returns a Promise that resolves to a Response object.
 
-Important: `fetch()` only throws on network errors. It does NOT throw for HTTP errors like 404. You must check `response.ok`.
+**Critical Point:** `fetch()` only rejects on network errors (e.g., no internet). It does NOT reject on HTTP error statuses (404, 500, etc.). You must manually check `response.ok` to detect server errors.
 
 Simple example:
 
@@ -92,16 +90,16 @@ When to use `fetch()`:
 When not to use:
 - For live, fast streams — use WebSockets instead.
 
-## 2.5 Promises (The Backbone of `fetch()`)
+## 2.5 Promises and Asynchronous Control Flow
 
-A **Promise** is a JavaScript object that represents a value that might not exist yet (but will eventually). Think of it like ordering food at a restaurant — you get a promise that your food will arrive.
+A **Promise** represents the eventual result of an asynchronous operation. It is a container for a value that may not yet exist.
 
-States of a Promise:
-- **Pending:** Waiting for the result (food is being made).
-- **Resolved (fulfilled):** Success — you got the value (food arrived and is good).
-- **Rejected:** Error — something went wrong (order was cancelled).
+**Promise States:**
+- **Pending:** The operation is in progress.
+- **Fulfilled (Resolved):** The operation succeeded and the value is available.
+- **Rejected:** The operation failed.
 
-Promises are returned by functions like `fetch()`. You must wait for the promise to resolve before using the value.
+Promises are fundamental to asynchronous JavaScript. Functions like `fetch()` return promises. You must handle the promise's result using `.then()`, `.catch()`, or `async/await`.
 
 ### Using `.then()` and `.catch()`
 
@@ -122,10 +120,10 @@ fetch('/api/data')
   });
 ```
 
-Key points:
-- `.then()` runs when the previous promise resolves.
-- Chain `.then()` calls to wait on each step.
-- `.catch()` catches errors from any `.then()` in the chain.
+**Key Characteristics:**
+- `.then()` executes once the preceding promise resolves.
+- Multiple `.then()` calls can be chained to sequence operations.
+- `.catch()` handles rejections from any promise in the chain.
 
 ### Using `async/await` (Cleaner Syntax)
 
@@ -160,56 +158,88 @@ When to use Promises:
 - `fetch()` always returns a promise.
 - When writing functions that take time to complete.
 
-## 3. Containers and Codespaces (Very Short)
+## 3. Containers and Codespaces
 
-A container (Docker) bundles your app and its tools so it runs the same anywhere.
+A **container** bundles an application and its dependencies (libraries, runtime, system tools) into an isolated, self-contained unit that runs consistently across different computing environments. **GitHub Codespaces** provides cloud-hosted development environments powered by container technology, eliminating the need to install tools locally.
 
-Dev Container / Codespace: a ready-to-code workspace in a container. Open it and you have the right tools.
+**Key Mechanisms:**
+- Container isolation ensures dependencies do not interfere with the host system or other containers.
+- Docker images define the container specification; Docker or compatible runtimes execute containers from images.
+- **Dev Containers** (`devcontainer.json`) declaratively specify a development environment, including base image, extensions, and post-creation commands, enabling reproducible setup across team members and CI/CD pipelines.
+- GitHub Codespaces provisions cloud-hosted containers with VS Code or JetBrains IDEs accessible via web browsers, eliminating local environment drift.
 
-When to use:
-- Share a working environment with teammates.
-- Test the app before deploying.
+**Use Cases:**
+- Development environments that must be identical across team members.
+- CI/CD pipelines requiring containerized application builds and tests.
+- Cloud-based IDEs for remote or collaborative development.
+- Simplified onboarding without complex local setup instructions.
 
-When not to use:
-- For tiny scripts or quick notes — containers add setup work.
+## 4. Command Line Interface and Git
 
-## 4. Command Line and Git (Very Short)
+The **command-line interface (CLI)** is a text-based interface for executing operating system commands and invoking programs. **Git** is a distributed version control system that tracks changes to files and coordinates collaboration across team members.
 
-Useful commands:
-- `ls` list files, `cd` change folder, `pwd` show where you are.
-- `cat` shows file content, `head` and `tail` show start/end.
-- `grep` finds text inside files.
+**Essential CLI Commands:**
+- `ls` lists directory contents; `cd` changes the working directory; `pwd` prints the current working directory path.
+- `cat` outputs file contents; `head` and `tail` display the beginning and end of files, respectively.
+- `grep` searches for text patterns within files; supports regular expressions for advanced pattern matching.
+- `echo` prints text to standard output.
 
-Git basics:
-- `git clone` copy a repo, `git add` stage changes, `git commit -m` save a change, `git push` upload to GitHub.
-- Use branches (`git checkout -b`) to try changes safely.
+**Git Workflow:**
+- `git clone <repository>` creates a local copy of a remote repository.
+- `git add <file>` stages changes for commit; `git commit -m "<message>"` records staged changes with a descriptive message.
+- `git push` uploads commits to the remote repository; `git pull` fetches and integrates remote changes.
+- `git checkout -b <branch-name>` creates and switches to a new branch, enabling isolated feature development.
 
-When to use CLI/Git:
-- Fast file checks, saving work, and sharing code.
+**Use Cases:**
+- Rapid file navigation and inspection.
+- Efficient version control and change tracking.
+- Collaborative development with branching and merging.
+- Integration with CI/CD pipelines for automated testing and deployment.
 
-## 5. Bash Scripts (Very Short)
+## 5. Bash Scripting
 
-Bash scripts run a list of shell commands. Use them to automate simple repetitive tasks.
+A **Bash script** is an executable text file containing a sequence of shell commands. Bash scripting enables automation of repetitive system administration tasks, data processing, and build workflows without requiring compilation or external tools.
 
-Example script idea: move old logs to an `archive/` folder.
+**Key Mechanisms:**
+- Variables store values accessible throughout the script using the `$VARIABLE_NAME` syntax.
+- Control flow constructs (`if`, `for`, `while`) enable conditional execution and iteration.
+- Command substitution (`$(command)`) allows the output of one command to be passed as input or assigned to variables.
+- Exit codes (typically 0 for success, non-zero for failure) communicate script outcome to parent processes and enable conditional chaining with `&&` and `||`.
 
-When to use scripts:
-- Automate backups, cleanups, or repeatable steps.
+**Use Cases:**
+- System administration: automated backups, log rotation, user provisioning.
+- Build automation: compilation, testing, artifact generation.
+- Data processing: batch file transformations, log analysis.
+- Deployment: automated environment configuration and service restart.
 
-When not to use scripts:
-- For complex logic; use Python or Node instead.
+**Example: Archive old logs**
+```bash
+#!/bin/bash
+# Find all .log files modified more than 7 days ago and move to archive/
+mkdir -p archive
+find . -name "*.log" -mtime +7 -exec mv {} archive/ \;
+echo "Old logs archived."
+```
 
-## 6. Testing (Very Short)
+**When Not to Use:**
+- Complex business logic or mathematical computation — use Python or JavaScript instead.
+- Cross-platform applications requiring portability — use a higher-level language.
 
-Types:
-- Unit tests: test one function.
-- Integration tests: test parts working together.
+## 6. Testing
 
-Why test:
-- Find bugs early and keep code working after changes.
+**Testing** is a systematic process of validating application behavior against expected outcomes. Automated tests provide regression prevention, documentation of behavior, and confidence in refactoring.
 
-Example (Vitest):
+**Test Categories:**
+- **Unit Tests:** Test individual functions or methods in isolation, verifying correct behavior for various inputs.
+- **Integration Tests:** Test multiple components or modules working together, validating end-to-end workflows and API interactions.
 
+**Coverage Metrics:**
+- **Statement Coverage:** Percentage of code statements executed during test runs.
+- **Path Coverage:** Percentage of all possible execution paths (branches) covered by tests. Path coverage is stricter than statement coverage.
+
+**Testing Framework:** Vitest is a modern testing framework for JavaScript/TypeScript with fast execution, ES modules support, and a familiar Jest-compatible API.
+
+**Example (Vitest):**
 ```javascript
 import { describe, it, expect } from 'vitest';
 
@@ -219,37 +249,77 @@ function calculatePlanetDistance(name) {
 }
 
 describe('calculatePlanetDistance', () => {
-  it('returns Mars distance', () => expect(calculatePlanetDistance('Mars')).toBe(225));
-  it('returns null for unknown', () => expect(calculatePlanetDistance('Pluto')).toBeNull());
+  it('returns correct distance for Mars', () => expect(calculatePlanetDistance('Mars')).toBe(225));
+  it('returns null for unknown planet', () => expect(calculatePlanetDistance('Pluto')).toBeNull());
 });
 ```
 
-When to write tests:
-- For important functions and behavior you don't want to break.
+**Best Practices:**
+- Write tests for functions with business logic or complex behavior.
+- Aim for high path coverage on critical code paths.
+- Use descriptive test names that document expected behavior.
 
-## 7. Security (Very Short)
+## 7. Security
 
-Basic rules:
-- Treat all outside input as unsafe. Validate and clean it.
-- Use parameterized queries for databases (do not build SQL with string + user input).
-- Escape user text before showing it on a web page.
+Web application security addresses threats arising from untrusted user input and malicious actors. The **CIA triad** (Confidentiality, Integrity, Availability) defines core security objectives.
 
-Bad example (do not do this):
+**Common Vulnerabilities:**
+
+**SQL Injection:** Attacker crafts malicious SQL by concatenating user input directly into query strings, allowing unauthorized database access or modification.
+
+**Example (vulnerable):**
 ```javascript
+// DO NOT USE
 const query = `SELECT * FROM users WHERE email = '${userInput}'`;
+client.query(query);
 ```
 
-Good example:
+**Mitigation:** Use parameterized queries (prepared statements) that separate query logic from data. The database driver enforces type safety and escaping.
+
 ```javascript
+// CORRECT
 const query = 'SELECT * FROM users WHERE email = $1';
 client.query(query, [userInput]);
 ```
 
-## 8. AI (Very Short)
+**Cross-Site Scripting (XSS):** Attacker injects malicious JavaScript into user-visible content, executing arbitrary code in victim browsers (stealing cookies, session tokens, etc.).
 
-Softmax turns raw model scores into probabilities that add up to 1.
+**Mitigation:** Escape user-provided strings before rendering to HTML. Replace special characters (`<`, `>`, `&`, `"`, `'`) with HTML entities.
 
-Simple softmax in Python:
+```javascript
+function escapeHTML(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+```
+
+**General Principles:**
+- Treat all external input as untrusted; validate format, length, and content against expected patterns.
+- Apply principle of least privilege: grant minimum necessary permissions.
+- Keep dependencies updated to patch known vulnerabilities.
+
+## 8. Artificial Intelligence and Softmax
+
+**Artificial Intelligence (AI)** broadly refers to computational systems designed to perform tasks typically requiring human intelligence. AI applications include natural language processing, computer vision, robotics, and autonomous decision-making.
+
+**Machine Learning Classification:** A fundamental AI task where a trained model predicts which category an input belongs to. Given input features, the model outputs raw scores (logits) for each category. These scores must be converted to normalized probabilities for interpretation and loss computation during training.
+
+**Softmax Function:** Converts raw model scores into a probability distribution over categories. The softmax transformation ensures output values sum to 1 and remain strictly between 0 and 1, enabling probabilistic interpretation and training with cross-entropy loss.
+
+**Softmax Formula:**
+
+$$S(z_i) = \frac{e^{z_i}}{\sum_{j=1}^{K} e^{z_j}}$$
+
+Where:
+- $z_i$ is the raw score (logit) for category $i$.
+- $K$ is the total number of categories.
+- $S(z_i)$ is the normalized probability for category $i$.
+
+**Example (Python):**
 
 ```python
 import math
@@ -259,15 +329,14 @@ def softmax(logits):
     s = sum(exps)
     return [e / s for e in exps]
 
-print(softmax([2.0, 1.0, 0.5]))
+# Output: probabilities that sum to 1.0
+print(softmax([2.0, 1.0, 0.5]))  # [0.665, 0.244, 0.090]
 ```
 
-When to use softmax:
-- To show probabilities for classification tasks.
-
-Softmax formula:
-
-$$S(z_i) = \frac{e^{z_i}}{\sum_{j=1}^{K} e^{z_j}}$$
+**Use Cases:**
+- Multi-class classification (e.g., image categorization, text sentiment, disease diagnosis).
+- Probability estimation for decision-making under uncertainty.
+- Training neural networks with cross-entropy loss.
 
 ---
 
