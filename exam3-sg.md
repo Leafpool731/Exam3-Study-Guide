@@ -283,6 +283,41 @@ Below are 10 short practice questions. Pick an answer, then click **Show answers
 - **B.** `res.json()`
 - **C.** `res.send()`
 - **D.** `req.json()`
+ 
+11) **Which Express middleware parses JSON request bodies into `req.body`?**
+
+- **A.** `express.urlencoded()`
+- **B.** `express.json()`
+- **C.** `express.static()`
+- **D.** `body-parser()`
+
+12) **Code task — Express route:** Write a short Express `POST /api/planets` route that reads JSON from the request body and responds with 201 and the saved planet object (assume in-memory push to an array `planets`).
+
+13) **Code task — fetch POST:** Write a `fetch()` snippet that POSTs JSON `{ name: 'Mars' }` to `/api/planets`, checks `response.ok`, and logs the returned JSON.
+
+14) **Code task — Softmax (JS):** Write a small JavaScript function `softmax(arr)` that returns the softmax probabilities for an array of numbers.
+
+15) **Code task — Parameterized SQL (pg):** Show a parameterized `pg` query to select a user by email (using `$1`).
+
+16) **Code task — Bash one-liner:** Give a bash one-liner that moves `.log` files older than 7 days from the current directory into `archive/`.
+
+17) **Multiple choice — Where should `app.use(express.json())` be placed?**
+
+- **A.** After routes
+- **B.** Before routes
+- **C.** Only inside route handlers
+- **D.** It does not matter
+
+18) **Multiple choice — Which HTTP status code commonly means "Created" after a successful POST?**
+
+- **A.** 200
+- **B.** 201
+- **C.** 400
+- **D.** 500
+
+19) **Code task — Vitest:** Write a tiny Vitest test that checks a function `add(a,b)` returns the sum.
+
+20) **Code task — XSS defense:** Give a simple JavaScript function `escapeHtml(s)` that replaces `<`, `>`, and `&` with their HTML entities.
 
 <details>
 <summary><strong>Show answers</strong></summary>
@@ -308,6 +343,85 @@ Below are 10 short practice questions. Pick an answer, then click **Show answers
 9) **C** — `app.use(express.static('public'))` is the usual helper to serve static files.
 
 10) **B** — `res.json()` sets `Content-Type: application/json` and sends the JSON.
+
+10) **B** — `res.json()` sets `Content-Type: application/json` and sends the JSON.
+
+11) **B** — `express.json()` parses JSON payloads and fills `req.body`.
+
+12) **Sample solution (Express POST route)**
+
+```javascript
+const planets = [];
+app.post('/api/planets', (req, res) => {
+  const planet = req.body; // assume JSON like { name: 'Mars' }
+  planet.id = planets.length + 1;
+  planets.push(planet);
+  res.status(201).json(planet);
+});
+```
+
+13) **Sample solution (fetch POST)**
+
+```javascript
+fetch('/api/planets', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ name: 'Mars' })
+})
+  .then(res => {
+    if (!res.ok) throw new Error('Server error ' + res.status);
+    return res.json();
+  })
+  .then(data => console.log('Created', data))
+  .catch(err => console.error(err));
+```
+
+14) **Sample solution (softmax in JS)**
+
+```javascript
+function softmax(arr) {
+  const exps = arr.map(x => Math.exp(x));
+  const sum = exps.reduce((a, b) => a + b, 0);
+  return exps.map(e => e / sum);
+}
+```
+
+15) **Sample solution (parameterized SQL with `pg`)**
+
+```javascript
+const query = 'SELECT * FROM users WHERE email = $1';
+const values = [userEmail];
+client.query(query, values, (err, res) => { /* handle result */ });
+```
+
+16) **Sample solution (bash one-liner)**
+
+```bash
+mkdir -p archive && find . -maxdepth 1 -name '*.log' -mtime +7 -exec mv {} archive/ \;
+```
+
+17) **B** — `app.use(express.json())` should be placed before route handlers so `req.body` is available.
+
+18) **B** — `201 Created` indicates a new resource was successfully created after a POST.
+
+19) **Sample solution (Vitest test for `add`)**
+
+```javascript
+import { it, expect } from 'vitest';
+import { add } from './math';
+
+it('adds two numbers', () => {
+  expect(add(2, 3)).toBe(5);
+});
+```
+
+20) **Sample solution (escapeHtml)**
+
+```javascript
+function escapeHtml(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+```
 
 </details>
 
