@@ -92,6 +92,74 @@ When to use `fetch()`:
 When not to use:
 - For live, fast streams — use WebSockets instead.
 
+## 2.5 Promises (The Backbone of `fetch()`)
+
+A **Promise** is a JavaScript object that represents a value that might not exist yet (but will eventually). Think of it like ordering food at a restaurant — you get a promise that your food will arrive.
+
+States of a Promise:
+- **Pending:** Waiting for the result (food is being made).
+- **Resolved (fulfilled):** Success — you got the value (food arrived and is good).
+- **Rejected:** Error — something went wrong (order was cancelled).
+
+Promises are returned by functions like `fetch()`. You must wait for the promise to resolve before using the value.
+
+### Using `.then()` and `.catch()`
+
+```javascript
+fetch('/api/data')
+  .then(response => {
+    // Runs AFTER response arrives
+    console.log('Got response:', response);
+    return response.json(); // Returns a NEW promise
+  })
+  .then(data => {
+    // Runs AFTER data is parsed
+    console.log('Got data:', data);
+  })
+  .catch(error => {
+    // Runs if ANY promise above fails
+    console.error('Error:', error);
+  });
+```
+
+Key points:
+- `.then()` runs when the previous promise resolves.
+- Chain `.then()` calls to wait on each step.
+- `.catch()` catches errors from any `.then()` in the chain.
+
+### Using `async/await` (Cleaner Syntax)
+
+`async/await` is just a nicer way to work with promises. It makes code look synchronous.
+
+```javascript
+// async function always returns a promise
+async function getData() {
+  try {
+    const response = await fetch('/api/data'); // Wait for response
+    if (!response.ok) throw new Error('Server error');
+    const data = await response.json(); // Wait for JSON parsing
+    console.log('Got data:', data);
+    return data;
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+// Call the async function (it returns a promise)
+getData().then(d => console.log(d)).catch(e => console.error(e));
+```
+
+Key points:
+- `async` keyword marks a function that returns a promise.
+- `await` pauses execution until the promise resolves.
+- Use `try/catch` for error handling instead of `.catch()`.
+- `async/await` is easier to read than nested `.then()` chains.
+
+When to use Promises:
+- Any time you need to wait for async work (network, files, timers).
+- `fetch()` always returns a promise.
+- When writing functions that take time to complete.
+
 ## 3. Containers and Codespaces (Very Short)
 
 A container (Docker) bundles your app and its tools so it runs the same anywhere.
