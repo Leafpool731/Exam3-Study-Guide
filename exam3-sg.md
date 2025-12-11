@@ -1,17 +1,26 @@
-# 🚀 CS 246 Final Exam Study Guide
+# 🚀 CS 246 Final Exam Study Guide (Simplified)
 
-## 1. 🌐 Writing Your Own API with Express
+This file explains key topics in very simple language. Each section says what the tool is, when to use it, and gives a tiny example.
 
-The core of a backend application. Focus on handling incoming requests (`req`) and sending outgoing responses (`res`).
+## 1. Writing a Small Server with Express
 
-| Concept | Express Mechanism / Location | Key Takeaway / Use Case |
-| :--- | :--- | :--- |
-| **Parsing Query Strings** | Available in the **`req.query`** object. | Used for passing non-essential parameters, filtering, or IDs in the URL (e.g., `/planets?name=Mars`). |
-| **Serving Static Files** | Use the **`app.use(express.static('public'))`** middleware. | Automatically serves client-side assets (HTML, CSS, JS, images) from a specified folder (e.g., `public`). |
-| **Sending Responses** | **`res.send()`** vs. **`res.json()`** | For REST APIs, **`res.json(data)`** is preferred because it explicitly sets the `Content-Type` header to `application/json`. |
-| **Server Debugging** | **`console.log()`** | Output appears **only in the server's terminal** (where Node/Express is running), *never* in the user's web browser. |
+Express makes a simple web server in Node.js. The server gets requests (`req`) and sends responses (`res`).
 
-### Example: Starting an Express Server on Port 3000
+Quick facts:
+- `req.query` holds query data from the URL (`/planets?name=Mars`).
+- `app.use(express.static('public'))` serves files like HTML and images from the `public` folder.
+- Use `res.json(data)` to send JSON back to the client.
+- `console.log()` shows messages only in the server terminal, not in the browser.
+
+When to use Express:
+- Small APIs and simple web apps.
+- Prototypes or learning projects.
+- Small microservices that do one job.
+
+When not to use:
+- For very high-speed services or very large, tangled apps.
+
+Example server (listens on port 3000):
 
 ```javascript
 // server.js
@@ -19,430 +28,177 @@ const express = require('express');
 const app = express();
 const PORT = 3000;
 
-// Middleware to parse JSON
 app.use(express.json());
-
-// Serve static files from public folder
 app.use(express.static('public'));
 
-// Basic GET route
 app.get('/', (req, res) => {
   res.send('Welcome to my API!');
 });
 
-// Start the server
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
 ```
 
-**To run this server:**
+Run it:
 ```bash
 node server.js
-# Output: Server is running on http://localhost:3000
 ```
 
-Then visit `http://localhost:3000` in your browser to see the response.
+Example: filter by query:
 
-### Example: Querying an API with Parameters
-
-**Request:**
 ```javascript
 app.get('/api/planets', (req, res) => {
-  const name = req.query.name; // Access query parameter
+  const name = req.query.name;
   const planets = [
     { id: 1, name: 'Mars', distance: 225 },
     { id: 2, name: 'Venus', distance: 108 }
   ];
-  
-  const filtered = name 
-    ? planets.filter(p => p.name.toLowerCase() === name.toLowerCase())
-    : planets;
-  
-  res.json(filtered); // Returns JSON with proper headers
+  const filtered = name ? planets.filter(p => p.name.toLowerCase() === name.toLowerCase()) : planets;
+  res.json(filtered);
 });
 ```
 
-**Usage:** `GET /api/planets?name=Mars` returns `[{ id: 1, name: 'Mars', distance: 225 }]`
+## 2. Getting Data in the Browser with `fetch()`
 
-## 2. ⚡ Client-Side Data Retrieval with `fetch()`
+`fetch()` asks a server for data. It returns a `Response` object. To read the body, call `response.json()`.
 
-The modern standard for making HTTP requests from the browser.
+Important: `fetch()` only throws on network errors. It does NOT throw for HTTP errors like 404. You must check `response.ok`.
 
-### The Two-Step Promise Process
-
-1.  `fetch(url)` returns a **Promise** that resolves to a **Response object**. (This step resolves when *headers* are received).
-2.  You must call a method like **`response.json()`** or `response.text()` to read the body content, which returns a **second Promise**.
-
-### ⚠️ Error Handling Caveat
-
-The fetch call only rejects on network errors (e.g., no internet, connection refused).
-It does NOT reject on HTTP error status codes (e.g., 404 Not Found, 500 Server Error).
-The Fix: You must manually check the `response.ok` property (a boolean that is true for 200-299 status codes) within the first `.then()` block.
-
-### Practical Example: Fetching Planet Data
+Simple example:
 
 ```javascript
-// Example using .then/.catch with explicit HTTP error handling
 fetch('/api/planets?name=Mars')
-  .then(response => {
-    // The important check: response.ok is true for status 200-299
-    if (!response.ok) {
-      // Handle specific status codes if needed
-      if (response.status === 404) {
-        throw new Error('Resource not found (404)');
-      }
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    return response.json(); // Parse JSON body
+  .then(res => {
+    if (!res.ok) throw new Error('Server error ' + res.status);
+    return res.json();
   })
-  .then(data => {
-    if (!data || data.length === 0) {
-      // Handle empty results gracefully (update UI if present)
-      const msg = document.getElementById('message');
-      if (msg) msg.textContent = 'No planets matched your query.';
-      return;
-    }
-    // Example: display first planet in UI if available
-    const msg = document.getElementById('message');
-    if (msg) msg.textContent = `${data[0].name} — ${data[0].distance} million km`;
-  })
-  .catch(error => {
-    // Network errors and any thrown errors from above end up here
-    console.error('Fetch failed:', error);
-    // Example: show a user-friendly message (if running in browser)
-    const errEl = document.getElementById('error');
-    if (errEl) errEl.textContent = `Error loading data: ${error.message}`;
-  });
+  .then(data => console.log(data))
+  .catch(err => console.error('Fetch failed:', err.message));
 
-// Same example using async/await (recommended for readability)
+// Async/await version
 async function loadPlanet(name) {
   const res = await fetch(`/api/planets?name=${encodeURIComponent(name)}`);
-  if (!res.ok) {
-    if (res.status === 404) throw new Error('Resource not found (404)');
-    throw new Error(`HTTP error! Status: ${res.status}`);
-  }
+  if (!res.ok) throw new Error('Server error ' + res.status);
   const data = await res.json();
-  if (!data || data.length === 0) {
-    return null;
-  }
-  return data[0];
+  return data[0] || null;
 }
-
-// Usage: loadPlanet('Mars').then(p => console.log(p)).catch(e => {/* handled above */});
 ```
 
----
+When to use `fetch()`:
+- To load lists or details for a web page.
+- To send form data with `POST` or `PUT`.
 
-## 3. 📦 Containers, Dev Containers, and Codespaces
+When not to use:
+- For live, fast streams — use WebSockets instead.
 
-* **Container (Docker):** A **general-purpose, isolated runtime environment** that bundles an application, its code, dependencies, and OS libraries. Its main purpose is to solve the "it works on my machine" problem by ensuring consistency across environments.
-* **Dev Container:** A specific type of Docker container customized for development, including tools like VS Code extensions and specific language runtimes.
-* **Codespace (GitHub):** A **running instance of a Dev Container** hosted by GitHub (a cloud-based development environment).
+## 3. Containers and Codespaces (Very Short)
 
-### Codespace and Git Repository Connection
+A container (Docker) bundles your app and its tools so it runs the same anywhere.
 
-* You can launch a Codespace from an **existing GitHub repository** to start developing immediately.
-* A Codespace created from a template initially has **no linked repo**. You must explicitly **Publish** it to create a new, linked repository on GitHub.
+Dev Container / Codespace: a ready-to-code workspace in a container. Open it and you have the right tools.
 
-### Example: Using Codespaces Workflow
+When to use:
+- Share a working environment with teammates.
+- Test the app before deploying.
 
-**Step 1: Launch from Repo**
-```bash
-# In GitHub repo, click "Code" → "Codespaces" → "Create codespace on main"
-# Automatically clones repo and sets up environment
-```
+When not to use:
+- For tiny scripts or quick notes — containers add setup work.
 
-**Step 2: Develop in Codespace**
-```bash
-# Inside Codespace terminal:
-npm install          # Install dependencies
-npm start            # Run development server
-# Changes auto-saved to GitHub
-```
+## 4. Command Line and Git (Very Short)
 
-**Step 3: Commit Changes**
-```bash
-git add .
-git commit -m "Add new features"
-git push             # Syncs back to GitHub
-```
+Useful commands:
+- `ls` list files, `cd` change folder, `pwd` show where you are.
+- `cat` shows file content, `head` and `tail` show start/end.
+- `grep` finds text inside files.
 
----
+Git basics:
+- `git clone` copy a repo, `git add` stage changes, `git commit -m` save a change, `git push` upload to GitHub.
+- Use branches (`git checkout -b`) to try changes safely.
 
-## 4. 💻 Command Line Interfaces (CLI) & Git
+When to use CLI/Git:
+- Fast file checks, saving work, and sharing code.
 
-### Basic Linux File Commands
+## 5. Bash Scripts (Very Short)
 
-| Command | Purpose |
-| :--- | :--- |
-| `pwd` | **P**rint **W**orking **D**irectory (show current path). |
-| `ls` | **L**ist directory contents. |
-| `cd <dir>` | **C**hange **D**irectory. |
-| `mkdir <dir>` | **M**ake a new **dir**ectory. |
-| `touch <file>` | Create a new, empty file or update the timestamp. |
-| `cat <file>` | Display the **entire content** of a file. |
-| `head <file>` | Display the **beginning** (default 10 lines) of a file. |
-| `tail <file>` | Display the **end** (default 10 lines) of a file. |
-| `grep <pattern> <file>` | **Search** for lines matching a pattern within a file. |
-| `echo` | Print a string to standard output (useful in scripts and quick prints). |
-| `file <file>` | Determine a file's type (text, executable, directory, etc.). |
+Bash scripts run a list of shell commands. Use them to automate simple repetitive tasks.
 
-### Example: Navigating and Exploring a Project
+Example script idea: move old logs to an `archive/` folder.
 
-```bash
-# Navigate to project directory
-cd ~/projects/my-app
+When to use scripts:
+- Automate backups, cleanups, or repeatable steps.
 
-# See what's in the project
-ls -la
+When not to use scripts:
+- For complex logic; use Python or Node instead.
 
-# Check current location
-pwd
-# Output: /home/user/projects/my-app
+## 6. Testing (Very Short)
 
-# Read first 15 lines of README
-head -n 15 README.md
+Types:
+- Unit tests: test one function.
+- Integration tests: test parts working together.
 
-# Search for TODO comments in all JS files
-grep -n "TODO" src/*.js
+Why test:
+- Find bugs early and keep code working after changes.
 
-# Print a quick message
-echo "Deployment complete"
-
-# Show file type for README
-file README.md
-```
-
-### Essential Git Commands
-
-| Command | Purpose |
-| :--- | :--- |
-| `git init` | Initialize a **new local repository**. |
-| `git clone <url>` | Create a local copy of a **remote repository**. |
-| `git add <file>` | **Stage** changes for the next commit. |
-| `git commit -m "msg"` | **Record** staged changes permanently in the local history. |
-| `git push` | **Upload** local commits to the remote repository (e.g., GitHub). |
-| `git pull` | **Fetch and merge** changes from the remote repository. |
-
-### Example: Complete Git Workflow
-
-```bash
-# Clone a repository
-git clone https://github.com/user/my-project.git
-cd my-project
-
-# Create and switch to a new branch
-git checkout -b feature/add-api
-
-# Make changes to files...
-
-# Stage and commit changes
-git add src/api.js
-git commit -m "Add planet API endpoint"
-
-# Push to GitHub
-git push origin feature/add-api
-
-# Later, pull any changes from teammates
-git pull origin main
-```
-
----
-
-## 5. ⚙️ Bash Automation (Shell Scripting)
-
-The practice of writing a series of shell statements in a file (`.sh`) to automate repetitive tasks.
-
-* **Basic Structure:** Scripts are a series of standard CLI commands.
-* **Input/Output:** Use `echo` for output and `read` for accepting user input.
-* **Conditionals:** Use `if/then/fi` blocks.
-    * Relational operators use special syntax inside conditional brackets (`[ ]`), e.g., **`-lt`** (less than), **`-gt`** (greater than), **`-eq`** (equal to).
-* **Loops:** Use `for` and `while` loops for repetitive actions.
-
-### Example: Bash Script for File Organization
-
-```bash
-#!/bin/bash
-# Script to organize log files by age
-
-read -p "Enter directory to organize: " dir
-
-if [ -d "$dir" ]; then
-  echo "Processing $dir..."
-  
-  for file in "$dir"/*.log; do
-    if [ -f "$file" ]; then
-      # Check file age (modified within last 7 days)
-      if [ $(find "$file" -mtime -7) ]; then
-        echo "Recent: $(basename $file)"
-      else
-        echo "Old: $(basename $file)"
-      fi
-    fi
-  done
-else
-  echo "Error: Directory not found"
-  exit 1
-fi
-```
-
----
-
-## 6. ✅ Software Testing Concepts
-
-### Hierarchy of Testing
-
-* **Unit Testing:** Tests the **smallest individual functions/modules in isolation** to guarantee they produce the intended results. (Focus of frameworks like **Vitest**).
-* **Integration Testing:** Tests that different components or modules work together correctly when assembled.
-* **Usability Testing:** Tests the user-friendliness and intuitiveness of the product.
-
-### Purpose of Testing
-
-* **Verify correctness:** Ensure individual units and combined systems behave as expected.
-* **Catch regressions early:** Automated tests detect when new changes break existing behavior.
-* **Improve design and confidence:** Tests encourage modular design and give confidence for refactoring.
-* **Documentation:** Tests show expected usage and edge-cases for functions and APIs.
-
-### Coverage Types
-
-* **Statement Coverage:** Ensures that every **executable statement** in the code is executed at least once by the test suite.
-* **Path Coverage:** Ensures that every possible **sequence of control flow** (or path) through the code is executed. Path coverage is more rigorous and implies statement coverage.
-
-### Quick Comparison: Path vs Statement Coverage
-
-- **Statement coverage:** Measures whether each line/statement was executed. Easier to achieve; does not guarantee all branches or combinations were tested.
-- **Path coverage:** Measures whether every possible route through the code (every branch and combination of conditions) has been executed. Much harder to achieve, often exponential in number of branches, but gives stronger guarantees.
-- **Practical note:** Aim for high statement coverage and targeted path coverage for complex functions (use unit tests to cover edge cases and integration tests for interactions).
-
-### Example: Unit Test with Vitest
+Example (Vitest):
 
 ```javascript
 import { describe, it, expect } from 'vitest';
 
 function calculatePlanetDistance(name) {
-  const planets = {
-    'Mars': 225,
-    'Venus': 108,
-    'Jupiter': 778
-  };
+  const planets = { Mars: 225, Venus: 108, Jupiter: 778 };
   return planets[name] || null;
 }
 
 describe('calculatePlanetDistance', () => {
-  it('should return correct distance for Mars', () => {
-    expect(calculatePlanetDistance('Mars')).toBe(225);
-  });
-  
-  it('should return null for unknown planet', () => {
-    expect(calculatePlanetDistance('Neptune')).toBeNull();
-  });
-  
-  // Achieves statement coverage by testing all code paths
-  it('should handle multiple planets', () => {
-    expect(calculatePlanetDistance('Venus')).toBe(108);
-    expect(calculatePlanetDistance('Jupiter')).toBe(778);
-  });
+  it('returns Mars distance', () => expect(calculatePlanetDistance('Mars')).toBe(225));
+  it('returns null for unknown', () => expect(calculatePlanetDistance('Pluto')).toBeNull());
 });
 ```
 
----
+When to write tests:
+- For important functions and behavior you don't want to break.
 
-## 7. 🔒 Security Best Practices
+## 7. Security (Very Short)
 
-Based on the **CIA Triad** model, which defines the core goals of information security.
+Basic rules:
+- Treat all outside input as unsafe. Validate and clean it.
+- Use parameterized queries for databases (do not build SQL with string + user input).
+- Escape user text before showing it on a web page.
 
-| Principle | Goal | Defense Strategy |
-| :--- | :--- | :--- |
-| **Confidentiality** | Keep data private and unauthorized access blocked. | Data encryption (at rest/in transit), strong hashing for passwords. |
-| **Integrity** | Ensure data is accurate and untampered. | Input sanitization, validation. |
-| **Availability** | Ensure systems stay online and functional for users. | Proper server configuration, denial-of-service (DoS) defenses. |
-
-### Major Web Vulnerabilities
-
-| Attack | Description | Defense / Remedy |
-| :--- | :--- | :--- |
-| **SQL Injection (SQLi)** | An attacker inserts malicious SQL code into an input field, allowing them to access, modify, or delete database data. | **Always use SQL parameters** (e.g., `$1, $2` in the `pg` module). The library will automatically sanitize the input. |
-| **Cross-Site Scripting (XSS)** | An attacker injects malicious client-side scripts (e.g., JavaScript) into a webpage viewed by other users. | **Never trust user input.** All user input must be sanitized/escaped before being displayed in the browser. |
-
-### Practical Examples
-
-**SQL Injection - VULNERABLE:**
+Bad example (do not do this):
 ```javascript
-// NEVER do this!
 const query = `SELECT * FROM users WHERE email = '${userInput}'`;
-// If userInput = "'; DROP TABLE users; --"
-// Entire table gets deleted!
 ```
 
-**SQL Injection - SAFE:**
+Good example:
 ```javascript
-// Use parameterized queries
 const query = 'SELECT * FROM users WHERE email = $1';
-client.query(query, [userInput]); // Input safely escaped
+client.query(query, [userInput]);
 ```
 
-**XSS - VULNERABLE:**
-```javascript
-// User input directly inserted into HTML
-const comment = req.body.userComment;
-res.send(`<div>${comment}</div>`);
-// If comment = "<script>alert('hacked')</script>"
-// Script executes in user's browser!
-```
+## 8. AI (Very Short)
 
-**XSS - SAFE:**
-```javascript
-// Escape HTML special characters
-const escaped = comment
-  .replace(/&/g, '&amp;')
-  .replace(/</g, '&lt;')
-  .replace(/>/g, '&gt;');
-res.send(`<div>${escaped}</div>`);
-```
+Softmax turns raw model scores into probabilities that add up to 1.
 
----
-
-## 8. 🧠 Artificial Intelligence (AI) Overview
-
-### Categories of AI
-
-* **Classical / Symbolic AI:** Relies on **explicitly programmed rules and logic** (e.g., if/then statements, expert systems).
-* **Machine Learning (ML):** The machine **discovers its own rules and patterns** by processing large amounts of data (e.g., Neural Networks, Decision Trees).
-* **Large Language Models (LLMs):** A specific, modern ML application (using the **Transformer** architecture and **Attention** mechanism).
-    * **Goal:** To predict the **next token** in a sequence.
-    * **Classification:** LLMs are considered **Artificial Narrow Intelligence (ANI)**, but often exhibit unexpected **Emergent Behavior** (like complex reasoning) due to the scale of their training.
-
-### The Softmax Function
-
-* **Purpose:** Converts a vector of raw prediction scores (logits) into a vector of **probabilities**.
-* **Properties:** The output values are between 0 and 1, and their sum equals 1.
-* **Formula:** $$S(z_i) = \frac{e^{z_i}}{\sum_{j=1}^{K} e^{z_j}}$$
-
-**Example (Logits = [2.0, 1.0, 0.5]):**
-1.  **Exponentials ($e^z$):** $[7.389, 2.718, 1.648]$
-2.  **Sum of Exponentials:** $11.755$
-3.  **Probabilities:**
-    * $P_1 = 7.389 / 11.755 \approx \mathbf{0.628}$ (62.8% confidence)
-    * $P_2 = 2.718 / 11.755 \approx \mathbf{0.231}$ (23.1% confidence)
-    * $P_3 = 1.648 / 11.755 \approx \mathbf{0.140}$ (14.0% confidence)
-    * (Sum: $0.628 + 0.231 + 0.140 = 0.999 \approx 1.0$)
-
-### Practical Application: Simple Softmax Implementation
+Simple softmax in Python:
 
 ```python
 import math
 
 def softmax(logits):
-    """Convert raw scores to probabilities"""
-    exp_values = [math.exp(x) for x in logits]
-    sum_exp = sum(exp_values)
-    return [exp / sum_exp for exp in exp_values]
+    exps = [math.exp(x) for x in logits]
+    s = sum(exps)
+    return [e / s for e in exps]
 
-# Example: Model predicts probabilities for 3 classes
-logits = [2.0, 1.0, 0.5]  # Raw model output
-probabilities = softmax(logits)
-print(f"Class 1: {probabilities[0]:.1%}")  # 62.8%
-print(f"Class 2: {probabilities[1]:.1%}")  # 23.1%
-print(f"Class 3: {probabilities[2]:.1%}")  # 14.0%
+print(softmax([2.0, 1.0, 0.5]))
 ```
+
+When to use softmax:
+- To show probabilities for classification tasks.
+
+---
+
+If you want, I can now:
+- Make a tiny `index.html` to test the `fetch()` examples in the browser, or
+- Extract the `server.js` into a runnable file and add a minimal `package.json` so you can run the server locally.
