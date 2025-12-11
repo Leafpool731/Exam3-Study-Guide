@@ -77,26 +77,67 @@ The modern standard for making HTTP requests from the browser.
 
 ### ⚠️ Error Handling Caveat
 
-* The `fetch` call **only rejects** on **network errors** (e.g., no internet, connection refused).
-* It **does NOT reject** on HTTP error status codes (e.g., 404 Not Found, 500 Server Error).
-* **The Fix:** You must manually check the **`response.ok`** property (a boolean that is `true` for 200-299 status codes) within the first `.then()` block.
+The fetch call only rejects on network errors (e.g., no internet, connection refused).
+It does NOT reject on HTTP error status codes (e.g., 404 Not Found, 500 Server Error).
+The Fix: You must manually check the `response.ok` property (a boolean that is true for 200-299 status codes) within the first `.then()` block.
 
 ### Practical Example: Fetching Planet Data
 
 ```javascript
+// Example using .then/.catch with explicit HTTP error handling
 fetch('/api/planets?name=Mars')
   .then(response => {
-    // Always check response.ok to handle HTTP errors
+    // The important check: response.ok is true for status 200-299
     if (!response.ok) {
+      // Handle specific status codes if needed
+      if (response.status === 404) {
+        throw new Error('Resource not found (404)');
+      }
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
-    return response.json(); // Step 2: Parse JSON (returns new Promise)
+    return response.json(); // Parse JSON body
   })
   .then(data => {
-    console.log('Planet:', data[0].name); // Mars
-    console.log('Distance:', data[0].distance); // 225 million km
+    if (!data || data.length === 0) {
+      // Handle empty results gracefully
+      console.warn('No matching planets found');
+      // Example: update UI if present
+      const msg = document.getElementById('message');
+      if (msg) msg.textContent = 'No planets matched your query.';
+      return;
+    }
+    console.log('Planet:', data[0].name);
+    console.log('Distance:', data[0].distance);
   })
-  .catch(error => console.error('Fetch failed:', error));
+  .catch(error => {
+    // Network errors and any thrown errors from above end up here
+    console.error('Fetch failed:', error);
+    // Example: show a user-friendly message (if running in browser)
+    const errEl = document.getElementById('error');
+    if (errEl) errEl.textContent = `Error loading data: ${error.message}`;
+  });
+
+// Same example using async/await (recommended for readability)
+async function loadPlanet(name) {
+  try {
+    const res = await fetch(`/api/planets?name=${encodeURIComponent(name)}`);
+    if (!res.ok) {
+      if (res.status === 404) throw new Error('Resource not found (404)');
+      throw new Error(`HTTP error! Status: ${res.status}`);
+    }
+    const data = await res.json();
+    if (!data || data.length === 0) {
+      console.warn('No matching planets found');
+      return null;
+    }
+    return data[0];
+  } catch (err) {
+    console.error('Fetch failed (async):', err);
+    throw err; // rethrow or handle here
+  }
+}
+
+// Usage: loadPlanet('Mars').then(p => console.log(p)).catch(e => {/* handled above */});
 ```
 
 ---
