@@ -197,9 +197,9 @@ print(softmax([2.0, 1.0, 0.5]))
 When to use softmax:
 - To show probabilities for classification tasks.
 
-Softmax formula (plain text):
+Softmax formula:
 
-S(z_i) = e^{z_i} / (e^{z_1} + e^{z_2} + ... + e^{z_K})
+$$S(z_i) = \frac{e^{z_i}}{\sum_{j=1}^{K} e^{z_j}}$$
 
 ---
 
