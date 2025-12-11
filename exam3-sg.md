@@ -11,6 +11,40 @@ The core of a backend application. Focus on handling incoming requests (`req`) a
 | **Sending Responses** | **`res.send()`** vs. **`res.json()`** | For REST APIs, **`res.json(data)`** is preferred because it explicitly sets the `Content-Type` header to `application/json`. |
 | **Server Debugging** | **`console.log()`** | Output appears **only in the server's terminal** (where Node/Express is running), *never* in the user's web browser. |
 
+### Example: Starting an Express Server on Port 3000
+
+```javascript
+// server.js
+const express = require('express');
+const app = express();
+const PORT = 3000;
+
+// Middleware to parse JSON
+app.use(express.json());
+
+// Serve static files from public folder
+app.use(express.static('public'));
+
+// Basic GET route
+app.get('/', (req, res) => {
+  res.send('Welcome to my API!');
+});
+
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log('Press Ctrl+C to stop the server');
+});
+```
+
+**To run this server:**
+```bash
+node server.js
+# Output: Server is running on http://localhost:3000
+```
+
+Then visit `http://localhost:3000` in your browser to see the response.
+
 ### Example: Querying an API with Parameters
 
 **Request:**
