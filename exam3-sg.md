@@ -152,6 +152,8 @@ git push             # Syncs back to GitHub
 | `head <file>` | Display the **beginning** (default 10 lines) of a file. |
 | `tail <file>` | Display the **end** (default 10 lines) of a file. |
 | `grep <pattern> <file>` | **Search** for lines matching a pattern within a file. |
+| `echo` | Print a string to standard output (useful in scripts and quick prints). |
+| `file <file>` | Determine a file's type (text, executable, directory, etc.). |
 
 ### Example: Navigating and Exploring a Project
 
@@ -171,6 +173,12 @@ head -n 15 README.md
 
 # Search for TODO comments in all JS files
 grep -n "TODO" src/*.js
+
+# Print a quick message
+echo "Deployment complete"
+
+# Show file type for README
+file README.md
 ```
 
 ### Essential Git Commands
@@ -256,10 +264,23 @@ fi
 * **Integration Testing:** Tests that different components or modules work together correctly when assembled.
 * **Usability Testing:** Tests the user-friendliness and intuitiveness of the product.
 
+### Purpose of Testing
+
+* **Verify correctness:** Ensure individual units and combined systems behave as expected.
+* **Catch regressions early:** Automated tests detect when new changes break existing behavior.
+* **Improve design and confidence:** Tests encourage modular design and give confidence for refactoring.
+* **Documentation:** Tests show expected usage and edge-cases for functions and APIs.
+
 ### Coverage Types
 
 * **Statement Coverage:** Ensures that every **executable statement** in the code is executed at least once by the test suite.
 * **Path Coverage:** Ensures that every possible **sequence of control flow** (or path) through the code is executed. Path coverage is more rigorous and implies statement coverage.
+
+### Quick Comparison: Path vs Statement Coverage
+
+- **Statement coverage:** Measures whether each line/statement was executed. Easier to achieve; does not guarantee all branches or combinations were tested.
+- **Path coverage:** Measures whether every possible route through the code (every branch and combination of conditions) has been executed. Much harder to achieve, often exponential in number of branches, but gives stronger guarantees.
+- **Practical note:** Aim for high statement coverage and targeted path coverage for complex functions (use unit tests to cover edge cases and integration tests for interactions).
 
 ### Example: Unit Test with Vitest
 
